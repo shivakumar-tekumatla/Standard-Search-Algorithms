@@ -19,6 +19,7 @@ class RRT:
     # Constructor
     def __init__(self, map_array, start, goal):
         self.map_array = map_array            # map array, 1->free, 0->obstacle
+        print(self.map_array)
         self.size_row = map_array.shape[0]    # map size
         self.size_col = map_array.shape[1]    # map size
 
@@ -61,7 +62,43 @@ class RRT:
             True if the new node is valid to be connected
         '''
         ### YOUR CODE HERE ###
-        return True
+        """Using Bresenham algorithm to check the collision """
+        y1,x1 = node1 #Because the row is same as y axis 
+        y2,x2 = node2
+        # y1,y2 = -y1,-y2  # going down row incerase but y coordinate decreases 
+        x1,y1 = min(x1,x2),min(y1,y2)
+        x2,y2 = max(x1,x2),max(y1,y2)
+        dy = y2-y1
+        dx = x2-x1 
+        x,y = x1,y1 # starting from the first point 
+        sx = -1 if x1>x2 else 1
+        sy = -1 if y1>y2 else 1
+
+        if dx>dy:
+            error = dx/2.0
+            while x!=x2:
+                if self.map_array[y][x] ==0:
+                    return False 
+                error-=dy
+                if error<0:
+                    y+=sy
+                    error+=dx
+                x+=sy
+        else:
+            error = dy/2.0
+            while y!=y2:
+                if self.map_array[y][x] ==0:
+                    return False
+                error-=dx
+                if error <0:
+                    x+=sx
+                    error+=dy
+                y+=sy
+
+        if self.map_array[y2][x2] ==0:
+            return False
+        else:
+            return True 
 
 
     def get_new_point(self, goal_bias):
