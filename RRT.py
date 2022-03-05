@@ -3,6 +3,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn import neighbors
 
 
 # Class for each tree node
@@ -129,8 +130,12 @@ class RRT:
             the nearest node
         '''
         ### YOUR CODE HERE ###
+        all_distances=[]
+        # Finding distance to all the vertices 
+        for vertex in self.vertices:
+            all_distances.append(self.dis(point,vertex))
 
-        return self.vertices[0]
+        return self.vertices[np.argmin(all_distances)]
 
 
     def get_neighbors(self, new_node, neighbor_size):
@@ -143,7 +148,11 @@ class RRT:
             neighbors - a list of neighbors that are within the neighbor distance 
         '''
         ### YOUR CODE HERE ###
-        return [self.vertices[0]]
+        neighbors=[]
+        for vertex in self.vertices:
+            if self.dis(new_node,vertex) <=neighbor_size:
+                neighbors.append(vertex)
+        return neighbors
 
 
     def rewire(self, new_node, neighbors):
