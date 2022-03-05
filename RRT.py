@@ -45,8 +45,10 @@ class RRT:
         return:
             euclidean distance between two nodes
         '''
+        
         ### YOUR CODE HERE ###
-        return 0
+
+        return np.sqrt((node1[0]-node2[0])**2+(node1[1]-node2[1])**2)
 
     
     def check_collision(self, node1, node2):
