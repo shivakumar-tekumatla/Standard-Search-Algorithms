@@ -19,7 +19,7 @@ class RRT:
     # Constructor
     def __init__(self, map_array, start, goal):
         self.map_array = map_array            # map array, 1->free, 0->obstacle
-        print(self.map_array)
+        # print(self.map_array)
         self.size_row = map_array.shape[0]    # map size
         self.size_col = map_array.shape[1]    # map size
 
@@ -27,7 +27,8 @@ class RRT:
         self.goal = Node(goal[0], goal[1])    # goal node
         self.vertices = []                    # list of nodes
         self.found = False                    # found flag
-        
+        self.max_rows = len(self.map_array)
+        self.max_columns = len(self.map_array[0])
 
     def init_map(self):
         '''Intialize the map before each search
@@ -110,7 +111,13 @@ class RRT:
             point - the new point
         '''
         ### YOUR CODE HERE ###
-        return self.goal
+        self.goal_bias = goal_bias
+        
+        if np.random.rand()>self.goal_bias:
+            point = Node(np.random.randint(0,self.max_rows),np.random.randint(0,self.max_columns))
+        else:
+            point = self.goal
+        return point
 
     
     def get_nearest_node(self, point):
@@ -122,6 +129,7 @@ class RRT:
             the nearest node
         '''
         ### YOUR CODE HERE ###
+
         return self.vertices[0]
 
 
