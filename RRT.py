@@ -1,9 +1,11 @@
 # Standard Algorithm Implementation
 # Sampling-based Algorithms RRT and RRT*
 
+from tabnanny import verbose
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn import neighbors
+from bresenham import bresenham
 
 
 # Class for each tree node
@@ -28,8 +30,10 @@ class RRT:
         self.goal = Node(goal[0], goal[1])    # goal node
         self.vertices = []                    # list of nodes
         self.found = False                    # found flag
-        self.max_rows = len(self.map_array)
-        self.max_columns = len(self.map_array[0])
+        self.max_rows = len(self.map_array)   #bounds for rows 
+        self.max_columns = len(self.map_array[0]) #bounds for columns 
+        # print("Max rows",self.max_rows)
+        # print("Max columns",self.max_columns)
 
     def init_map(self):
         '''Intialize the map before each search
@@ -50,8 +54,9 @@ class RRT:
         '''
         
         ### YOUR CODE HERE ###
-
-        return np.sqrt((node1[0]-node2[0])**2+(node1[1]-node2[1])**2)
+        # print("node1",type(node1))
+        # print("node2",type(node2))
+        return np.sqrt((node1.row-node2.row)**2+(node1.col-node2.col)**2)
 
     
     def check_collision(self, node1, node2):
@@ -65,43 +70,49 @@ class RRT:
         '''
         ### YOUR CODE HERE ###
         """Using Bresenham algorithm to check the collision """
-        y1,x1 = node1 #Because the row is same as y axis 
-        y2,x2 = node2
+        y1,x1 = node1.row,node1.col #Because the row is same as y axis 
+        y2,x2 = node2.row,node2.col
         # y1,y2 = -y1,-y2  # going down row incerase but y coordinate decreases 
-        x1,y1 = min(x1,x2),min(y1,y2)
-        x2,y2 = max(x1,x2),max(y1,y2)
-        dy = y2-y1
-        dx = x2-x1 
-        x,y = x1,y1 # starting from the first point 
-        sx = -1 if x1>x2 else 1
-        sy = -1 if y1>y2 else 1
+        # x1,y1,x2,y2 = min(x1,x2),min(y1,y2),max(x1,x2),max(y1,y2)
 
-        if dx>dy:
-            error = dx/2.0
-            while x!=x2:
-                if self.map_array[y][x] ==0:
-                    return False 
-                error-=dy
-                if error<0:
-                    y+=sy
-                    error+=dx
-                x+=sy
-        else:
-            error = dy/2.0
-            while y!=y2:
-                if self.map_array[y][x] ==0:
-                    return False
-                error-=dx
-                if error <0:
-                    x+=sx
-                    error+=dy
-                y+=sy
+        # dy = y2-y1
+        # dx = x2-x1 
+        # x,y = x1,y1 # starting from the first point 
+        # sx = -1 if x1>x2 else 1
+        # sy = -1 if y1>y2 else 1
 
-        if self.map_array[y2][x2] ==0:
-            return False
-        else:
-            return True 
+        # if dx>dy:
+        #     error = dx/2.0
+        #     while x!=x2:
+        #         if self.map_array[y][x] ==0:
+        #             return False 
+        #         error-=dy
+        #         if error<0:
+        #             y+=sy
+        #             error+=dx
+        #         x+=sx
+        # else:
+        #     error = dy/2.0
+        #     while y!=y2:
+        #         if self.map_array[y][x] ==0:
+        #             return False
+        #         error-=dx
+        #         if error <0:
+        #             x+=sx
+        #             error+=dy
+        #         y+=sy
 
+        # if self.map_array[y2][x2] ==0:
+        #     return False
+        # else:
+        #     return True 
+        bresenham_line = list(bresenham(x1,y1,x2,y2))
+        for point in bresenham_line:
+            x,y = point
+            if self.map_array[y][x] ==0:
+                return False
+            else:
+                return True 
 
     def get_new_point(self, goal_bias):
         '''Choose the goal or generate a random point
@@ -166,6 +177,7 @@ class RRT:
         '''
         ### YOUR CODE HERE ###
 
+
     
     def draw_map(self):
         '''Visualization of the result
@@ -208,11 +220,28 @@ class RRT:
         self.init_map()
 
         ### YOUR CODE HERE ###
+        step_size = 0.1*(self.max_columns+self.max_rows)/2
+        goal_bias = 0.1
+        for _ in range(n_pts):# In each step,
+            point = self.get_new_point(goal_bias) # get a new point, 
+            nearest_node = self.get_nearest_node(point)# get its nearest node, 
+            not_collision = self.check_collision(point, nearest_node)# extend the node and check collision to decide whether to add or drop,
 
-        # In each step,
-        # get a new point, 
-        # get its nearest node, 
-        # extend the node and check collision to decide whether to add or drop,
+            if not_collision:
+                if point!=nearest_node:
+                    v = [point.row-nearest_node.row,point.col-nearest_node.col]
+                    # print(v)
+                    norm_v = np.sqrt(v[0]**2+v[1]**2)
+                    u = [step_size*v[0]/norm_v,step_size*v[1]/norm_v]
+                    print(v)
+                    next_point = Node(int(nearest_node.row+u[0]),int(nearest_node.col+u[1]))
+                    if next_point in self.vertices:
+                        continue
+                    else:
+                        self.vertices.append(next_point)
+            else:
+                pass
+            # print("Vertices",self.vertices)
         # if added, check if reach the neighbor region of the goal.
 
         # Output
