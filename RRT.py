@@ -30,8 +30,7 @@ class RRT:
         self.found = False                    # found flag
         self.max_rows = len(self.map_array)   #bounds for rows 
         self.max_columns = len(self.map_array[0]) #bounds for columns 
-        # print("Max rows",self.max_rows)
-        # print("Max columns",self.max_columns)
+
 
     def init_map(self):
         '''Intialize the map before each search
@@ -221,34 +220,30 @@ class RRT:
         step_size = 0.025*(self.max_columns+self.max_rows)/2
         goal_bias = 0.1
         itr=0  #keeping track of iterations 
-        while itr<=n_pts:
-        # for _ in range(n_pts):# In each step,
+        while itr<=n_pts: # In each step,
             point = self.get_new_point(goal_bias) # get a new point, 
             nearest_node = self.get_nearest_node(point)# get its nearest node, 
-            not_collision = self.check_collision(point, nearest_node)# extend the node and check collision to decide whether to add or drop,
-
+            # not_collision = self.check_collision(point, nearest_node)# extend the node and check collision to decide whether to add or drop,
+            # print(not_collision,point.row,point.col,nearest_node.row,nearest_node.col)
+            # if not_collision:
+            distance = self.dis(point,nearest_node)
+            t = step_size/distance
+            next_point = Node(int((1-t)*nearest_node.row+t*point.row),int((1-t)*nearest_node.col+t*point.col))
+            # extend the node and check collision to decide whether to add or drop,
+            not_collision = self.check_collision(next_point, nearest_node)
             if not_collision:
-                
-                distance = self.dis(point,nearest_node)
-                t = step_size/distance
-
-                next_point = Node(int((1-t)*nearest_node.row+t*point.row),int((1-t)*nearest_node.col+t*point.col))
-                # if next_point in self.vertices:
-                #     continue
-                # else:
                 itr+=1
                 self.vertices.append(next_point)
                 next_point.parent = nearest_node
                 # print(next_point.row,next_point.col,next_point.parent.row,next_point.parent.col)
-                print(itr)
-                if self.dis(next_point,self.goal)<step_size:
+                # print(itr)
+                if self.dis(next_point,self.goal)<step_size:  # if added, check if reach the neighbor region of the goal
                     self.found= True
                     self.goal.parent = next_point
                     break
             else:
                 pass
             # print("Vertices",self.vertices)
-        # if added, check if reach the neighbor region of the goal.
 
         # Output
         if self.found:
