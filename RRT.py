@@ -177,6 +177,22 @@ class RRT:
         Rewire all the other neighbor nodes.
         '''
         ### YOUR CODE HERE ###
+        distances =[]
+        for neighbor in neighbors:
+            distances.append(neighbor.cost+self.dis(new_node,neighbor))
+        best_neighbor = neighbors[np.argmin(distances)] #Finding the best neighbor based on lowest distance
+        new_node.parent = best_neighbor 
+        new_node.cost = best_neighbor.cost+self.dis(new_node,best_neighbor)
+        neighbors.remove(best_neighbor)
+        #Trying to rewire all the neighbors again with the newly formed point 
+        for neighbor in neighbors:
+            self.vertices.remove(neighbor)
+            distance_newNode = new_node.cost + self.dis(new_node,neighbor)
+            if neighbor.cost > distance_newNode:
+                neighbor.parent = new_node 
+                neighbor.cost = distance_newNode
+            self.vertices.append(neighbor)
+        self.vertices.append(new_node)
 
     def draw_map(self):
         '''Visualization of the result
@@ -224,10 +240,10 @@ class RRT:
         while itr<=n_pts: # In each step,
             point = self.get_new_point(self.goal_bias) # get a new point, 
             nearest_node = self.get_nearest_node(point)# get its nearest node, 
-            # not_collision = self.check_collision(point, nearest_node)# extend the node and check collision to decide whether to add or drop,
-            # print(not_collision,point.row,point.col,nearest_node.row,nearest_node.col)
-            # if not_collision:
+
             distance = self.dis(point,nearest_node)
+            # print(distance)
+            if distance ==0:continue 
             t = self.step_size/distance
             next_point = Node(int((1-t)*nearest_node.row+t*point.row),int((1-t)*nearest_node.col+t*point.col))
             # extend the node and check collision to decide whether to add or drop,
@@ -237,9 +253,7 @@ class RRT:
                 self.vertices.append(next_point)
                 next_point.parent = nearest_node
                 next_point.cost = next_point.parent.cost +self.dis(next_point.parent ,next_point)
-                # print(next_point.row,next_point.col,next_point.parent.row,next_point.parent.col)
-                # print(itr)
-                # next_point.cost = self.dis(next_point,self.goal)
+
                 if self.dis(next_point,self.goal)<self.step_size and self.check_collision(next_point, self.goal):  # if added, check if reach the neighbor region of the goal
                     self.found= True
                     self.goal.parent = next_point
@@ -275,14 +289,30 @@ class RRT:
         self.init_map()
 
         ### YOUR CODE HERE ###
-
-        # In each step,
-        # get a new point, 
-        # get its nearest node, 
-        # extend the node and check collision to decide whether to add or drop,
-        # if added, rewire the node and its neighbors,
-        # and check if reach the neighbor region of the goal if the path is not found.
-
+        itr = 0
+        while itr<=n_pts: # In each step,
+            point = self.get_new_point(self.goal_bias)# get a new point, 
+            nearest_node = self.get_nearest_node(point) # get its nearest node, 
+            distance = self.dis(point,nearest_node)
+            t = self.step_size/distance
+            next_point = Node(int((1-t)*nearest_node.row+t*point.row),int((1-t)*nearest_node.col+t*point.col))
+            # extend the node and check collision to decide whether to add or drop,
+            not_collision = self.check_collision(next_point, nearest_node)
+            if not_collision:
+                itr+=1
+                # self.vertices.append(next_point)
+                neighbors = self.get_neighbors(next_point, neighbor_size)
+                # print(neighbors)
+                # if added, rewire the node and its neighbors,
+                self.rewire(next_point,neighbors)
+                # and check if reach the neighbor region of the goal if the path is not found.
+                if self.dis(next_point,self.goal)<self.step_size and self.check_collision(next_point, self.goal):  # if added, check if reach the neighbor region of the goal
+                    self.found= True
+                    self.goal.parent = next_point
+                    self.goal.cost = next_point.cost +self.dis(next_point ,self.goal)
+                    break
+            else:
+                pass
         # Output
         if self.found:
             steps = len(self.vertices) - 2

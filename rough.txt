@@ -1,0 +1,6 @@
+            # not_collision = self.check_collision(point, nearest_node)# extend the node and check collision to decide whether to add or drop,
+            # print(not_collision,point.row,point.col,nearest_node.row,nearest_node.col)
+            # if not_collision:
+                            # print(next_point.row,next_point.col,next_point.parent.row,next_point.parent.col)
+                # print(itr)
+                # next_point.cost = self.dis(next_point,self.goal)
