@@ -30,7 +30,8 @@ class RRT:
         self.found = False                    # found flag
         self.max_rows = len(self.map_array)   #bounds for rows 
         self.max_columns = len(self.map_array[0]) #bounds for columns 
-
+        self.step_size = 0.025*(self.max_columns+self.max_rows)/2
+        self.goal_bias = 0.1
 
     def init_map(self):
         '''Intialize the map before each search
@@ -144,7 +145,7 @@ class RRT:
         # Finding distance to all the vertices 
         for vertex in self.vertices:
             all_distances.append(self.dis(point,vertex))
-
+        # self.vertices[np.argmin(all_distances)]
         return self.vertices[np.argmin(all_distances)]
 
 
@@ -217,17 +218,16 @@ class RRT:
         self.init_map()
         # print(self.map_array)
         ### YOUR CODE HERE ###
-        step_size = 0.025*(self.max_columns+self.max_rows)/2
-        goal_bias = 0.1
+        
         itr=0  #keeping track of iterations 
         while itr<=n_pts: # In each step,
-            point = self.get_new_point(goal_bias) # get a new point, 
+            point = self.get_new_point(self.goal_bias) # get a new point, 
             nearest_node = self.get_nearest_node(point)# get its nearest node, 
             # not_collision = self.check_collision(point, nearest_node)# extend the node and check collision to decide whether to add or drop,
             # print(not_collision,point.row,point.col,nearest_node.row,nearest_node.col)
             # if not_collision:
             distance = self.dis(point,nearest_node)
-            t = step_size/distance
+            t = self.step_size/distance
             next_point = Node(int((1-t)*nearest_node.row+t*point.row),int((1-t)*nearest_node.col+t*point.col))
             # extend the node and check collision to decide whether to add or drop,
             not_collision = self.check_collision(next_point, nearest_node)
@@ -237,9 +237,15 @@ class RRT:
                 next_point.parent = nearest_node
                 # print(next_point.row,next_point.col,next_point.parent.row,next_point.parent.col)
                 # print(itr)
-                if self.dis(next_point,self.goal)<step_size:  # if added, check if reach the neighbor region of the goal
+                # next_point.cost = self.dis(next_point,self.goal)
+                if self.dis(next_point,self.goal)<self.step_size and self.check_collision(next_point, self.goal):  # if added, check if reach the neighbor region of the goal
                     self.found= True
                     self.goal.parent = next_point
+                    child = self.goal #finding the total cost 
+                    #Backtracing until start point is reached
+                    while child!=self.start:
+                        self.goal.cost+=self.dis(child,child.parent ) 
+                        child = child.parent
                     break
             else:
                 pass
