@@ -1,6 +1,7 @@
 # Standard Algorithm Implementation
 # Sampling-based Algorithms RRT and RRT*
 
+from dis import dis
 from tabnanny import verbose
 import matplotlib.pyplot as plt
 import numpy as np
@@ -235,17 +236,14 @@ class RRT:
                 itr+=1
                 self.vertices.append(next_point)
                 next_point.parent = nearest_node
+                next_point.cost = next_point.parent.cost +self.dis(next_point.parent ,next_point)
                 # print(next_point.row,next_point.col,next_point.parent.row,next_point.parent.col)
                 # print(itr)
                 # next_point.cost = self.dis(next_point,self.goal)
                 if self.dis(next_point,self.goal)<self.step_size and self.check_collision(next_point, self.goal):  # if added, check if reach the neighbor region of the goal
                     self.found= True
                     self.goal.parent = next_point
-                    child = self.goal #finding the total cost 
-                    #Backtracing until start point is reached
-                    while child!=self.start:
-                        self.goal.cost+=self.dis(child,child.parent ) 
-                        child = child.parent
+                    self.goal.cost = next_point.cost +self.dis(next_point ,self.goal)
                     break
             else:
                 pass
