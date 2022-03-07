@@ -71,40 +71,7 @@ class RRT:
         """Using Bresenham algorithm to check the collision """
         y1,x1 = node1.row,node1.col #Because the row is same as y axis 
         y2,x2 = node2.row,node2.col
-        # y1,y2 = -y1,-y2  # going down row incerase but y coordinate decreases 
-        # x1,y1,x2,y2 = min(x1,x2),min(y1,y2),max(x1,x2),max(y1,y2)
-
-        # dy = y2-y1
-        # dx = x2-x1 
-        # x,y = x1,y1 # starting from the first point 
-        # sx = -1 if x1>x2 else 1
-        # sy = -1 if y1>y2 else 1
-
-        # if dx>dy:
-        #     error = dx/2.0
-        #     while x!=x2:
-        #         if self.map_array[y][x] ==0:
-        #             return False 
-        #         error-=dy
-        #         if error<0:
-        #             y+=sy
-        #             error+=dx
-        #         x+=sx
-        # else:
-        #     error = dy/2.0
-        #     while y!=y2:
-        #         if self.map_array[y][x] ==0:
-        #             return False
-        #         error-=dx
-        #         if error <0:
-        #             x+=sx
-        #             error+=dy
-        #         y+=sy
-
-        # if self.map_array[y2][x2] ==0:
-        #     return False
-        # else:
-        #     return True 
+        
         bresenham_line = list(bresenham(x1,y1,x2,y2))
         # print(bresenham_line)
         for point in bresenham_line:
@@ -300,7 +267,6 @@ class RRT:
             not_collision = self.check_collision(next_point, nearest_node)
             if not_collision:
                 itr+=1
-                # self.vertices.append(next_point)
                 neighbors = self.get_neighbors(next_point, neighbor_size)
                 # print(neighbors)
                 # if added, rewire the node and its neighbors,
