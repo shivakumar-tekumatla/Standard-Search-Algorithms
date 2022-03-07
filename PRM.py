@@ -73,7 +73,19 @@ class PRM:
         self.graph.clear()
 
         ### YOUR CODE HERE ###
-        self.samples.append((0, 0))
+        # self.samples.append((0, 0))
+        rows = self.size_row*n_pts/(self.size_col+self.size_row)
+        cols = self.size_col*n_pts/(self.size_col+self.size_row)
+        n_sqrt = np.ceil(np.sqrt(n_pts))
+        row_step = np.ceil(self.size_row/n_sqrt)
+        col_step = np.ceil(self.size_col/n_sqrt)
+        rows_grid = np.arange(0,self.size_row,row_step)
+        cols_grid = np.arange(0,self.size_col,col_step)
+        for row in rows_grid:
+            for col in cols_grid:
+                if self.map_array[row][col]==1:
+                    self.samples.append((row, col))
+
 
     
     def random_sample(self, n_pts):
@@ -89,7 +101,9 @@ class PRM:
         self.graph.clear()
 
         ### YOUR CODE HERE ###
-        self.samples.append((0, 0))
+        # self.samples.append((0, 0))
+        
+
 
 
     def gaussian_sample(self, n_pts):
