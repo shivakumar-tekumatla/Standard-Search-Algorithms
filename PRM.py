@@ -4,6 +4,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import networkx as nx
+from bresenham import bresenham 
 
 
 # Class for PRM
@@ -29,7 +30,21 @@ class PRM:
             True if there are obstacles between two points
         '''
         ### YOUR CODE HERE ###
-        return True
+        """Using Bresenham algorithm to check the collision """
+        
+        y1,x1 = p1[0],p1[1] #Because the row is same as y axis 
+        y2,x2 = p2[0],p2[1] 
+
+        bresenham_line = list(bresenham(x1,y1,x2,y2))
+        # print(bresenham_line)
+        for point in bresenham_line:
+            x,y = point
+            if self.map_array[y][x] ==0:
+                return True
+                break
+            else:
+                return False 
+
 
 
     def dis(self, point1, point2):
@@ -42,7 +57,7 @@ class PRM:
             euclidean distance between two points
         '''
         ### YOUR CODE HERE ###
-        return 0
+        return np.sqrt((point1[0]-point2[0])**2+(point1[1]-point2[2])**2)
 
 
     def uniform_sample(self, n_pts):
