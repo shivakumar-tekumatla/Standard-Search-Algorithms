@@ -7,7 +7,6 @@ import numpy as np
 from sklearn import neighbors
 from bresenham import bresenham
 
-
 # Class for each tree node
 class Node:
     def __init__(self, row, col):
@@ -15,7 +14,6 @@ class Node:
         self.col = col        # coordinate
         self.parent = None    # parent node
         self.cost = 0.0       # cost
-
 
 # Class for RRT
 class RRT:
@@ -107,10 +105,12 @@ class RRT:
         # else:
         #     return True 
         bresenham_line = list(bresenham(x1,y1,x2,y2))
+        # print(bresenham_line)
         for point in bresenham_line:
             x,y = point
             if self.map_array[y][x] ==0:
                 return False
+                break
             else:
                 return True 
 
@@ -177,8 +177,6 @@ class RRT:
         '''
         ### YOUR CODE HERE ###
 
-
-    
     def draw_map(self):
         '''Visualization of the result
         '''
@@ -218,27 +216,35 @@ class RRT:
         '''
         # Remove previous result
         self.init_map()
-
+        # print(self.map_array)
         ### YOUR CODE HERE ###
-        step_size = 0.1*(self.max_columns+self.max_rows)/2
+        step_size = 0.025*(self.max_columns+self.max_rows)/2
         goal_bias = 0.1
-        for _ in range(n_pts):# In each step,
+        itr=0  #keeping track of iterations 
+        while itr<=n_pts:
+        # for _ in range(n_pts):# In each step,
             point = self.get_new_point(goal_bias) # get a new point, 
             nearest_node = self.get_nearest_node(point)# get its nearest node, 
             not_collision = self.check_collision(point, nearest_node)# extend the node and check collision to decide whether to add or drop,
 
             if not_collision:
-                if point!=nearest_node:
-                    v = [point.row-nearest_node.row,point.col-nearest_node.col]
-                    # print(v)
-                    norm_v = np.sqrt(v[0]**2+v[1]**2)
-                    u = [step_size*v[0]/norm_v,step_size*v[1]/norm_v]
-                    print(v)
-                    next_point = Node(int(nearest_node.row+u[0]),int(nearest_node.col+u[1]))
-                    if next_point in self.vertices:
-                        continue
-                    else:
-                        self.vertices.append(next_point)
+                
+                distance = self.dis(point,nearest_node)
+                t = step_size/distance
+
+                next_point = Node(int((1-t)*nearest_node.row+t*point.row),int((1-t)*nearest_node.col+t*point.col))
+                # if next_point in self.vertices:
+                #     continue
+                # else:
+                itr+=1
+                self.vertices.append(next_point)
+                next_point.parent = nearest_node
+                # print(next_point.row,next_point.col,next_point.parent.row,next_point.parent.col)
+                print(itr)
+                if self.dis(next_point,self.goal)<step_size:
+                    self.found= True
+                    self.goal.parent = next_point
+                    break
             else:
                 pass
             # print("Vertices",self.vertices)
