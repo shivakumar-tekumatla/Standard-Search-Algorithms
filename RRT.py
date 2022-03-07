@@ -31,8 +31,9 @@ class RRT:
         self.found = False                    # found flag
         self.max_rows = len(self.map_array)   #bounds for rows 
         self.max_columns = len(self.map_array[0]) #bounds for columns 
-        self.step_size = 0.025*(self.max_columns+self.max_rows)/2
+        self.step_size = 0.025*(self.max_columns+self.max_rows)/2  # Creating step size of 0.025 times of average rows and columns 
         self.goal_bias = 0.1
+
 
     def init_map(self):
         '''Intialize the map before each search
@@ -71,7 +72,7 @@ class RRT:
         """Using Bresenham algorithm to check the collision """
         y1,x1 = node1.row,node1.col #Because the row is same as y axis 
         y2,x2 = node2.row,node2.col
-        
+
         bresenham_line = list(bresenham(x1,y1,x2,y2))
         # print(bresenham_line)
         for point in bresenham_line:
