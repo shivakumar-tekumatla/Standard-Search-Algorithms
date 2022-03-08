@@ -35,7 +35,7 @@ You would code **Learning Phase** in the function `sample`, where it samples poi
 There are four different sampling methods to be implemented - `uniform_sample`, `random_sample`, `gaussian_sample` and `bridge_sample`. Please refer to the lectures and make sure you understand the ideas behind these sampling methods before coding. 
 
 After sampling, you would need to connect these sampling points to theirs k nearest neighbors. To find their neighbors, you should NOT just use brutal force algorithm (This will take way too long), but use K-D tree as mentioned in the class. Here is an [example](https://stackoverflow.com/questions/13796782/networkx-random-geometric-graph-implementation-using-k-d-trees) of how to use scipy K-D tree structure. 
-
+ 
 Finally, you will need to use all the sampled points and their connection with neighbors as nodes and edges to build a Networkx graph.
 
 #### Query Phase

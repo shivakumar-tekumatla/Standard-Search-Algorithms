@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import networkx as nx
 from bresenham import bresenham 
-
+from sklearn.neighbors import KDTree
 
 # Class for PRM
 class PRM:
@@ -41,9 +41,9 @@ class PRM:
             x,y = point
             if self.map_array[y][x] ==0:
                 return True
-                break
-            else:
-                return False 
+            #     break
+            # else:
+        return False 
 
 
 
@@ -204,13 +204,20 @@ class PRM:
 
         ### YOUR CODE HERE ###
 
-        # Find the pairs of points that need to be connected
-        # and compute their distance/weight.
-        # Store them as
-        # pairs = [(p_id0, p_id1, weight_01), (p_id0, p_id2, weight_02), 
-        #          (p_id1, p_id2, weight_12) ...]
+        # kd_tree = KDTree(self.samples)# Find the pairs of points that need to be connected
+        # distances,indices = kd_tree.query(self.samples,k=5)# and compute their distance/weight.
         pairs = []
-
+        # # print(distances[0][0])
+        # # print(indices)
+        # for i in range(len(self.samples)):# Store them as
+        #     for j in range(1,len(indices[i])):
+        #         if not self.check_collision(self.samples[i],self.samples[indices[i][j]]):
+        #             pairs.append((i,indices[i][j],distances[i][j]))# pairs = [(p_id0, p_id1, weight_01), (p_id0, p_id2, weight_02), 
+        # #          (p_id1, p_id2, weight_12) ...]
+        # for pair in pairs:
+        #     p1_id,p2_id,distance = pair
+        #     if  self.check_collision(self.samples[p1_id],self.samples[p2_id]):
+        #         pairs.remove(pair)
         # Use sampled points and pairs of points to build a graph.
         # To add nodes to the graph, use
         # self.graph.add_nodes_from([p_id0, p_id1, p_id2 ...])
@@ -222,7 +229,9 @@ class PRM:
         # current point in self.samples
         # For example, for self.samples = [(1, 2), (3, 4), (5, 6)],
         # p_id for (1, 2) is 0 and p_id for (3, 4) is 1.
-        self.graph.add_nodes_from([])
+        nodes_indices = [i for i in range(len(self.samples))]
+        # nodes_indices = [i for i in j for j in indices]
+        self.graph.add_nodes_from(nodes_indices)
         self.graph.add_weighted_edges_from(pairs)
 
         # Print constructed graph information

@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn import neighbors
 from bresenham import bresenham
+from sklearn.neighbors import KDTree
 
 # Class for each tree node
 class Node:
@@ -79,9 +80,8 @@ class RRT:
             x,y = point
             if self.map_array[y][x] ==0:
                 return False
-                break
-            else:
-                return True 
+
+        return True 
 
     def get_new_point(self, goal_bias):
         '''Choose the goal or generate a random point
@@ -95,7 +95,7 @@ class RRT:
         self.goal_bias = goal_bias
         
         if np.random.rand()>self.goal_bias:
-            point = Node(np.random.randint(0,self.max_rows),np.random.randint(0,self.max_columns))
+            point = Node(np.random.randint(0,self.max_rows-1),np.random.randint(0,self.max_columns-1))
         else:
             point = self.goal
         return point
@@ -154,12 +154,15 @@ class RRT:
         neighbors.remove(best_neighbor)
         #Trying to rewire all the neighbors again with the newly formed point 
         for neighbor in neighbors:
-            self.vertices.remove(neighbor)
+            
             distance_newNode = new_node.cost + self.dis(new_node,neighbor)
-            if neighbor.cost > distance_newNode:
+            not_collision = self.check_collision(neighbor, new_node)
+
+            if neighbor.cost > distance_newNode and not_collision:
+                self.vertices.remove(neighbor)
                 neighbor.parent = new_node 
                 neighbor.cost = distance_newNode
-            self.vertices.append(neighbor)
+                self.vertices.append(neighbor)
         self.vertices.append(new_node)
 
     def draw_map(self):
@@ -262,22 +265,25 @@ class RRT:
             point = self.get_new_point(self.goal_bias)# get a new point, 
             nearest_node = self.get_nearest_node(point) # get its nearest node, 
             distance = self.dis(point,nearest_node)
+            if distance==0:continue
             t = self.step_size/distance
             next_point = Node(int((1-t)*nearest_node.row+t*point.row),int((1-t)*nearest_node.col+t*point.col))
             # extend the node and check collision to decide whether to add or drop,
-            not_collision = self.check_collision(next_point, nearest_node)
-            if not_collision:
-                itr+=1
-                neighbors = self.get_neighbors(next_point, neighbor_size)
-                # print(neighbors)
-                # if added, rewire the node and its neighbors,
-                self.rewire(next_point,neighbors)
-                # and check if reach the neighbor region of the goal if the path is not found.
-                if self.dis(next_point,self.goal)<self.step_size and self.check_collision(next_point, self.goal):  # if added, check if reach the neighbor region of the goal
-                    self.found= True
-                    self.goal.parent = next_point
-                    self.goal.cost = next_point.cost +self.dis(next_point ,self.goal)
-                    break
+            if  ((next_point.row <self.max_rows) and  (next_point.col <self.max_columns)):#continue
+                print(next_point.row,next_point.col)
+                not_collision = self.check_collision(next_point, nearest_node)
+                if not_collision:
+                    itr+=1
+                    neighbors = self.get_neighbors(next_point, neighbor_size)
+                    # print(neighbors)
+                    # if added, rewire the node and its neighbors,
+                    self.rewire(next_point,neighbors)
+                    # and check if reach the neighbor region of the goal if the path is not found.
+                    if self.dis(next_point,self.goal)<self.step_size and self.check_collision(next_point, self.goal):  # if added, check if reach the neighbor region of the goal
+                        self.found= True
+                        self.goal.parent = next_point
+                        self.goal.cost = next_point.cost +self.dis(next_point ,self.goal)
+                        # break
             else:
                 pass
         # Output
