@@ -18,7 +18,7 @@ class PRM:
         self.samples = []                     # list of sampled points
         self.graph = nx.Graph()               # constructed graph
         self.path = []                        # list of nodes of the found path
-
+        self.k_neighbors = 5                  # Number of neighbors sampling 
 
     def check_collision(self, p1, p2):
         '''Check if the path between two points collide with obstacles
@@ -41,8 +41,6 @@ class PRM:
             x,y = point
             if self.map_array[y][x] ==0:
                 return True
-            #     break
-            # else:
         return False 
 
 
@@ -204,15 +202,15 @@ class PRM:
 
         ### YOUR CODE HERE ###
 
-        # kd_tree = KDTree(self.samples)# Find the pairs of points that need to be connected
-        # distances,indices = kd_tree.query(self.samples,k=5)# and compute their distance/weight.
+        self.kd_tree = KDTree(self.samples)# Find the pairs of points that need to be connected
+        distances,indices = self.kd_tree.query(self.samples,k=self.k_neighbors)# and compute their distance/weight.
         pairs = []
         # # print(distances[0][0])
         # # print(indices)
-        # for i in range(len(self.samples)):# Store them as
-        #     for j in range(1,len(indices[i])):
-        #         if not self.check_collision(self.samples[i],self.samples[indices[i][j]]):
-        #             pairs.append((i,indices[i][j],distances[i][j]))# pairs = [(p_id0, p_id1, weight_01), (p_id0, p_id2, weight_02), 
+        for i in range(len(self.samples)):# Store them as
+            for j in range(1,len(indices[i])):
+                if not self.check_collision(self.samples[i],self.samples[indices[i][j]]):
+                    pairs.append((i,indices[i][j],distances[i][j]))# pairs = [(p_id0, p_id1, weight_01), (p_id0, p_id2, weight_02), 
         # #          (p_id1, p_id2, weight_12) ...]
         # for pair in pairs:
         #     p1_id,p2_id,distance = pair
@@ -254,12 +252,16 @@ class PRM:
 
         # Temporarily add start and goal to the graph
         self.samples.append(start)
+        start_id = 'start'#len(self.samples)-1
+        goal_id  ='goal'# len(self.samples)-1
         self.samples.append(goal)
         # start and goal id will be 'start' and 'goal' instead of some integer
         self.graph.add_nodes_from(['start', 'goal'])
 
         ### YOUR CODE HERE ###
-
+        start_distances,start_indices=self.kd_tree.query([start],k=self.k_neighbors)
+        goal_distances,goal_indices=self.kd_tree.query([start],k=self.k_neighbors)
+        
         # Find the pairs of points that need to be connected
         # and compute their distance/weight.
         # You could store them as
@@ -267,18 +269,26 @@ class PRM:
         #                (start_id, p_id2, weight_s2) ...]
         start_pairs = []
         goal_pairs = []
-
+        for i in range(0,len(start_indices[0])):
+            if not self.check_collision(start,self.samples[start_indices[0][i]]):
+                start_pairs.append((start_id,start_indices[0][i],start_distances[0][i]))
+        for i in range(0,len(goal_indices[0])):
+            if not self.check_collision(goal,self.samples[goal_indices[0][i]]):
+                goal_pairs.append((goal_id,goal_indices[0][i],goal_distances[0][i]))
+        print(start_pairs)
         # Add the edge to graph
         self.graph.add_weighted_edges_from(start_pairs)
         self.graph.add_weighted_edges_from(goal_pairs)
-        
+
         # Seach using Dijkstra
         try:
-            self.path = nx.algorithms.shortest_paths.weighted.dijkstra_path(self.graph, 'start', 'goal')
-            path_length = nx.algorithms.shortest_paths.weighted.dijkstra_path_length(self.graph, 'start', 'goal')
+            self.path = nx.algorithms.shortest_paths.weighted.dijkstra_path(self.graph,'start', 'goal')
+            path_length = nx.algorithms.shortest_paths.weighted.dijkstra_path_length(self.graph,'start', 'goal')
             print("The path length is %.2f" %path_length)
         except nx.exception.NetworkXNoPath:
             print("No path found")
+            # print(nx.exception.NetworkXNoPath)
+            # print(e)
         
         # Draw result
         self.draw_map()
