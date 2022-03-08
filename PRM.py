@@ -83,8 +83,8 @@ class PRM:
         cols_grid = np.arange(0,self.size_col,col_step)
         for row in rows_grid:
             for col in cols_grid:
-                if self.map_array[row][col]==1:
-                    self.samples.append((row, col))
+                if self.map_array[int(row)][int(col)]==1:
+                    self.samples.append((int(row), int(col)))
 
 
     
@@ -102,7 +102,14 @@ class PRM:
 
         ### YOUR CODE HERE ###
         # self.samples.append((0, 0))
-        
+        rows_list = np.random.uniform(0,self.size_row,1000)
+        cols_list = np.random.uniform(0,self.size_col,1000)
+        rows = map(np.ceil,rows_list)
+        cols = map(np.ceil,cols_list)
+        for val in zip(rows,cols):
+            row,col = val 
+            if self.map_array[int(row)][int(col)]==1:
+                self.samples.append((int(row), int(col)))
 
 
 
