@@ -74,8 +74,6 @@ class PRM:
 
         ### YOUR CODE HERE ###
         # self.samples.append((0, 0))
-        rows = self.size_row*n_pts/(self.size_col+self.size_row)
-        cols = self.size_col*n_pts/(self.size_col+self.size_row)
         n_sqrt = np.ceil(np.sqrt(n_pts))
         row_step = np.ceil(self.size_row/n_sqrt)
         col_step = np.ceil(self.size_col/n_sqrt)
@@ -104,8 +102,8 @@ class PRM:
         # self.samples.append((0, 0))
         rows_list = np.random.uniform(0,self.size_row,1000)
         cols_list = np.random.uniform(0,self.size_col,1000)
-        rows = map(np.ceil,rows_list)
-        cols = map(np.ceil,cols_list)
+        rows = map(np.floor,rows_list)
+        cols = map(np.floor,cols_list)
         for val in zip(rows,cols):
             row,col = val 
             if self.map_array[int(row)][int(col)]==1:
