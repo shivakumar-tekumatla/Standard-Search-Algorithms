@@ -18,7 +18,7 @@ class PRM:
         self.samples = []                     # list of sampled points
         self.graph = nx.Graph()               # constructed graph
         self.path = []                        # list of nodes of the found path
-        self.k_neighbors = 5                  # Number of neighbors sampling 
+        self.k_neighbors = 7                  # Number of neighbors sampling 
 
     def check_collision(self, p1, p2):
         '''Check if the path between two points collide with obstacles
@@ -42,8 +42,6 @@ class PRM:
             if self.map_array[y][x] ==0:
                 return True
         return False 
-
-
 
     def dis(self, point1, point2):
         '''Calculate the euclidean distance between two points
@@ -100,6 +98,8 @@ class PRM:
         # self.samples.append((0, 0))
         rows_list = np.random.uniform(0,self.size_row,1000)
         cols_list = np.random.uniform(0,self.size_col,1000)
+        # rows =[np.floor(i) for i in rows_list]
+        # cols =[np.floor(i) for i in cols_list]
         rows = map(np.floor,rows_list)
         cols = map(np.floor,cols_list)
         for val in zip(rows,cols):
@@ -201,7 +201,6 @@ class PRM:
             self.bridge_sample(n_pts)
 
         ### YOUR CODE HERE ###
-
         self.kd_tree = KDTree(self.samples)# Find the pairs of points that need to be connected
         distances,indices = self.kd_tree.query(self.samples,k=self.k_neighbors)# and compute their distance/weight.
         pairs = []
@@ -260,7 +259,7 @@ class PRM:
 
         ### YOUR CODE HERE ###
         start_distances,start_indices=self.kd_tree.query([start],k=self.k_neighbors)
-        goal_distances,goal_indices=self.kd_tree.query([start],k=self.k_neighbors)
+        goal_distances,goal_indices=self.kd_tree.query([goal],k=self.k_neighbors)
         
         # Find the pairs of points that need to be connected
         # and compute their distance/weight.
@@ -275,11 +274,13 @@ class PRM:
         for i in range(0,len(goal_indices[0])):
             if not self.check_collision(goal,self.samples[goal_indices[0][i]]):
                 goal_pairs.append((goal_id,goal_indices[0][i],goal_distances[0][i]))
-        print(start_pairs)
+        # print(start_pairs)
         # Add the edge to graph
         self.graph.add_weighted_edges_from(start_pairs)
         self.graph.add_weighted_edges_from(goal_pairs)
-
+        # print("Hello")
+        # print(self.graph.edges)
+        # print("World")
         # Seach using Dijkstra
         try:
             self.path = nx.algorithms.shortest_paths.weighted.dijkstra_path(self.graph,'start', 'goal')
