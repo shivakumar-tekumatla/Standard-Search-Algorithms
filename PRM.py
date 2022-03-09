@@ -18,7 +18,7 @@ class PRM:
         self.samples = []                     # list of sampled points
         self.graph = nx.Graph()               # constructed graph
         self.path = []                        # list of nodes of the found path
-        self.k_neighbors = 7                  # Number of neighbors sampling 
+        self.k_neighbors = 9                  # Number of neighbors sampling 
 
     def check_collision(self, p1, p2):
         '''Check if the path between two points collide with obstacles
@@ -96,8 +96,8 @@ class PRM:
 
         ### YOUR CODE HERE ###
         # self.samples.append((0, 0))
-        rows_list = np.random.uniform(0,self.size_row,1000)
-        cols_list = np.random.uniform(0,self.size_col,1000)
+        rows_list = np.random.uniform(0,self.size_row,n_pts)
+        cols_list = np.random.uniform(0,self.size_col,n_pts)
         # rows =[np.floor(i) for i in rows_list]
         # cols =[np.floor(i) for i in cols_list]
         rows = map(np.floor,rows_list)
@@ -122,8 +122,31 @@ class PRM:
         self.graph.clear()
 
         ### YOUR CODE HERE ###
-        self.samples.append((0, 0))
+        # self.samples.append((0, 0))
+        mean = 1
+        std  = 0.5
+        #generating the first random point
+        itr=0
+        while itr<n_pts:
+            
+            p1_row = np.random.randint(0,self.size_row)
+            p1_col = np.random.randint(0,self.size_col)
+            p2_row = int(np.ceil(p1_row)+np.random.normal(loc=mean,scale=std))
+            p2_col = int(np.ceil(p1_col)+np.random.normal(loc=mean,scale=std))
+            
+            if p2_col>=self.size_col or p2_row>=self.size_row:continue
 
+            p1_not_collision = bool(self.map_array[p1_row][p1_col])
+            p2_not_collision = bool(self.map_array[p2_row][p2_col])
+            add_or_not = p1_not_collision^p2_not_collision #XOR operation 
+            # print(p1_row,p1_col,p1_not_collision, p2_row,p2_col,p2_not_collision)
+            if add_or_not:
+                
+                if p1_not_collision:
+                    self.samples.append((p1_row,p1_col))
+                else:
+                    self.samples.append((p2_row,p2_col))
+                itr+=1
 
     def bridge_sample(self, n_pts):
         '''Use bridge sampling and store valid points
@@ -138,8 +161,29 @@ class PRM:
         self.graph.clear()
 
         ### YOUR CODE HERE ###
-        self.samples.append((0, 0))
+        # self.samples.append((0, 0))
+        mean =1 
+        std = 0.5
+        itr=0
+        # n_pts =1000
+        while itr<n_pts:
+            p1_row = np.random.randint(0,self.size_row)
+            p1_col = np.random.randint(0,self.size_col)
+            p1_not_collision = bool(self.map_array[p1_row][p1_col])
+            if not p1_not_collision:
 
+                p2_row = int(np.ceil(p1_row)+np.random.normal(loc=mean,scale=std))
+                p2_col = int(np.ceil(p1_col)+np.random.normal(loc=mean,scale=std))
+            
+                if p2_col>=self.size_col or p2_row>=self.size_row:continue
+                p2_not_collision = bool(self.map_array[p2_row][p2_col])
+                if not p2_not_collision:
+                    p_row = (p1_row+p2_row)//2
+                    p_col = (p1_col+p2_col)//2
+                    # print(p_row,p_col)
+                    if bool(self.map_array[p_row][p_col]):
+                        self.samples.append((p_row,p_col))
+                        itr+=1
 
     def draw_map(self):
         '''Visualization of the result
@@ -197,8 +241,11 @@ class PRM:
             self.random_sample(n_pts)
         elif sampling_method == "gaussian":
             self.gaussian_sample(n_pts)
+            self.k_neighbors = 50
         elif sampling_method == "bridge":
             self.bridge_sample(n_pts)
+            
+            self.k_neighbors = 50
 
         ### YOUR CODE HERE ###
         self.kd_tree = KDTree(self.samples)# Find the pairs of points that need to be connected
