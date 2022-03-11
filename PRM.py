@@ -249,7 +249,7 @@ class PRM:
             self.k_neighbors = 50
 
         ### YOUR CODE HERE ###
-        self.k_neighbors = 5
+        # self.k_neighbors = 5
         self.kd_tree = KDTree(self.samples)# Find the pairs of points that need to be connected
         distances,indices = self.kd_tree.query(self.samples,k=self.k_neighbors)# and compute their distance/weight.
         pairs = []
