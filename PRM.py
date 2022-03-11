@@ -109,6 +109,7 @@ class PRM:
 
 
 
+
     def gaussian_sample(self, n_pts):
         '''Use gaussian sampling and store valid points
         arguments:
@@ -248,15 +249,19 @@ class PRM:
             self.k_neighbors = 50
 
         ### YOUR CODE HERE ###
+        self.k_neighbors = 5
         self.kd_tree = KDTree(self.samples)# Find the pairs of points that need to be connected
         distances,indices = self.kd_tree.query(self.samples,k=self.k_neighbors)# and compute their distance/weight.
         pairs = []
+        nodes=[]
         # # print(distances[0][0])
         # # print(indices)
         for i in range(len(self.samples)):# Store them as
+            nodes.append(indices[i][0])
             for j in range(1,len(indices[i])):
                 if not self.check_collision(self.samples[i],self.samples[indices[i][j]]):
                     pairs.append((i,indices[i][j],distances[i][j]))# pairs = [(p_id0, p_id1, weight_01), (p_id0, p_id2, weight_02), 
+                    # nodes.append(indices[i][j])
         # #          (p_id1, p_id2, weight_12) ...]
         # for pair in pairs:
         #     p1_id,p2_id,distance = pair
