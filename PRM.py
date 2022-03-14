@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import networkx as nx
 from bresenham import bresenham 
-from sklearn.neighbors import KDTree
+from scipy.spatial import KDTree
 
 # Class for PRM
 class PRM:
@@ -18,8 +18,8 @@ class PRM:
         self.samples = []                     # list of sampled points
         self.graph = nx.Graph()               # constructed graph
         self.path = []                        # list of nodes of the found path
-        self.k_neighbors = 9                  # Number of neighbors sampling 
-
+        self.k_neighbors = 9                  # Number of neighbors for connecting to start and goal positions  
+        self.radius = 25                      # Radius to find the neighbors
     def check_collision(self, p1, p2):
         '''Check if the path between two points collide with obstacles
         arguments:
@@ -53,7 +53,7 @@ class PRM:
             euclidean distance between two points
         '''
         ### YOUR CODE HERE ###
-        return np.sqrt((point1[0]-point2[0])**2+(point1[1]-point2[2])**2)
+        return np.sqrt((point1[0]-point2[0])**2+(point1[1]-point2[1])**2)
 
 
     def uniform_sample(self, n_pts):
@@ -184,7 +184,7 @@ class PRM:
                     # print(p_row,p_col)
                     if bool(self.map_array[p_row][p_col]):
                         self.samples.append((p_row,p_col))
-                        itr+=1
+            itr+=1
 
     def draw_map(self):
         '''Visualization of the result
@@ -251,22 +251,9 @@ class PRM:
         ### YOUR CODE HERE ###
         # self.k_neighbors = 5
         self.kd_tree = KDTree(self.samples)# Find the pairs of points that need to be connected
-        distances,indices = self.kd_tree.query(self.samples,k=self.k_neighbors)# and compute their distance/weight.
         pairs = []
-        nodes=[]
-        # # print(distances[0][0])
-        # # print(indices)
-        for i in range(len(self.samples)):# Store them as
-            nodes.append(indices[i][0])
-            for j in range(1,len(indices[i])):
-                if not self.check_collision(self.samples[i],self.samples[indices[i][j]]):
-                    pairs.append((i,indices[i][j],distances[i][j]))# pairs = [(p_id0, p_id1, weight_01), (p_id0, p_id2, weight_02), 
-                    # nodes.append(indices[i][j])
         # #          (p_id1, p_id2, weight_12) ...]
-        # for pair in pairs:
-        #     p1_id,p2_id,distance = pair
-        #     if  self.check_collision(self.samples[p1_id],self.samples[p2_id]):
-        #         pairs.remove(pair)
+
         # Use sampled points and pairs of points to build a graph.
         # To add nodes to the graph, use
         # self.graph.add_nodes_from([p_id0, p_id1, p_id2 ...])
@@ -278,6 +265,15 @@ class PRM:
         # current point in self.samples
         # For example, for self.samples = [(1, 2), (3, 4), (5, 6)],
         # p_id for (1, 2) is 0 and p_id for (3, 4) is 1.
+        self.kdtree = KDTree(self.samples)
+        
+        query_pairs = self.kdtree.query_pairs(self.radius)
+        for pair in query_pairs:
+            id1,id2 = pair
+            if not self.check_collision(self.samples[id1],self.samples[id2]):
+                pairs.append((id1,id2,self.dis(self.samples[id1],self.samples[id2])))
+
+
         nodes_indices = [i for i in range(len(self.samples))]
         # nodes_indices = [i for i in j for j in indices]
         self.graph.add_nodes_from(nodes_indices)
@@ -310,9 +306,8 @@ class PRM:
         self.graph.add_nodes_from(['start', 'goal'])
 
         ### YOUR CODE HERE ###
-        start_distances,start_indices=self.kd_tree.query([start],k=self.k_neighbors)
-        goal_distances,goal_indices=self.kd_tree.query([goal],k=self.k_neighbors)
-        
+        start_distances,start_indices=self.kd_tree.query(start,self.k_neighbors)
+        goal_distances,goal_indices=self.kd_tree.query(goal,self.k_neighbors)
         # Find the pairs of points that need to be connected
         # and compute their distance/weight.
         # You could store them as
@@ -320,19 +315,16 @@ class PRM:
         #                (start_id, p_id2, weight_s2) ...]
         start_pairs = []
         goal_pairs = []
-        for i in range(0,len(start_indices[0])):
-            if not self.check_collision(start,self.samples[start_indices[0][i]]):
-                start_pairs.append((start_id,start_indices[0][i],start_distances[0][i]))
-        for i in range(0,len(goal_indices[0])):
-            if not self.check_collision(goal,self.samples[goal_indices[0][i]]):
-                goal_pairs.append((goal_id,goal_indices[0][i],goal_distances[0][i]))
-        # print(start_pairs)
+        for i in range(0,len(start_indices)):
+            if not self.check_collision(start,self.samples[start_indices[i]]):
+                start_pairs.append((start_id,start_indices[i],start_distances[i]))
+        for i in range(0,len(goal_indices)):
+            if not self.check_collision(goal,self.samples[goal_indices[i]]):
+                goal_pairs.append((goal_id,goal_indices[i],goal_distances[i]))
         # Add the edge to graph
         self.graph.add_weighted_edges_from(start_pairs)
         self.graph.add_weighted_edges_from(goal_pairs)
-        # print("Hello")
-        # print(self.graph.edges)
-        # print("World")
+
         # Seach using Dijkstra
         try:
             self.path = nx.algorithms.shortest_paths.weighted.dijkstra_path(self.graph,'start', 'goal')
@@ -340,8 +332,6 @@ class PRM:
             print("The path length is %.2f" %path_length)
         except nx.exception.NetworkXNoPath:
             print("No path found")
-            # print(nx.exception.NetworkXNoPath)
-            # print(e)
         
         # Draw result
         self.draw_map()
