@@ -41,3 +41,20 @@
         #     return False
         # else:
         #     return True 
+
+
+
+                
+        # query_pairs = self.kdtree.query_pairs(self.radius)
+        # for pair in query_pairs:
+        #     id1,id2 = pair
+        #     if not self.check_collision(self.samples[id1],self.samples[id2]):
+        #         pairs.append((id1,id2,self.dis(self.samples[id1],self.samples[id2])))
+        # sample_id=0
+        # for sample in self.samples:
+        #     distances,indices = self.kdtree.query(sample,self.k_neighbors)
+        #     for i in range(0,len(indices)):
+        #         if not self.check_collision(sample,self.samples[indices[i]]):
+        #             pairs.append((sample_id,indices[i],distances[i]))
+        #     sample_id+=1
+        

@@ -18,8 +18,7 @@ class PRM:
         self.samples = []                     # list of sampled points
         self.graph = nx.Graph()               # constructed graph
         self.path = []                        # list of nodes of the found path
-        self.k_neighbors = 9                  # Number of neighbors for connecting to start and goal positions  
-        self.radius = 25                      # Radius to find the neighbors
+        self.k_neighbors = 8                 # Number of neighbors for connecting to start and goal positions  
     def check_collision(self, p1, p2):
         '''Check if the path between two points collide with obstacles
         arguments:
@@ -36,7 +35,6 @@ class PRM:
         y2,x2 = p2[0],p2[1] 
 
         bresenham_line = list(bresenham(x1,y1,x2,y2))
-        # print(bresenham_line)
         for point in bresenham_line:
             x,y = point
             if self.map_array[y][x] ==0:
@@ -54,7 +52,6 @@ class PRM:
         '''
         ### YOUR CODE HERE ###
         return np.sqrt((point1[0]-point2[0])**2+(point1[1]-point2[1])**2)
-
 
     def uniform_sample(self, n_pts):
         '''Use uniform sampling and store valid points
@@ -80,8 +77,6 @@ class PRM:
                 if self.map_array[int(row)][int(col)]==1:
                     self.samples.append((int(row), int(col)))
 
-
-    
     def random_sample(self, n_pts):
         '''Use random sampling and store valid points
         arguments:
@@ -98,17 +93,12 @@ class PRM:
         # self.samples.append((0, 0))
         rows_list = np.random.uniform(0,self.size_row,n_pts)
         cols_list = np.random.uniform(0,self.size_col,n_pts)
-        # rows =[np.floor(i) for i in rows_list]
-        # cols =[np.floor(i) for i in cols_list]
         rows = map(np.floor,rows_list)
         cols = map(np.floor,cols_list)
         for val in zip(rows,cols):
             row,col = val 
             if self.map_array[int(row)][int(col)]==1:
                 self.samples.append((int(row), int(col)))
-
-
-
 
     def gaussian_sample(self, n_pts):
         '''Use gaussian sampling and store valid points
@@ -125,7 +115,7 @@ class PRM:
         ### YOUR CODE HERE ###
         # self.samples.append((0, 0))
         mean = 1
-        std  = 0.5
+        std  = 10
         #generating the first random point
         itr=0
         while itr<n_pts:
@@ -147,7 +137,7 @@ class PRM:
                     self.samples.append((p1_row,p1_col))
                 else:
                     self.samples.append((p2_row,p2_col))
-                itr+=1
+            itr+=1
 
     def bridge_sample(self, n_pts):
         '''Use bridge sampling and store valid points
@@ -164,9 +154,9 @@ class PRM:
         ### YOUR CODE HERE ###
         # self.samples.append((0, 0))
         mean =1 
-        std = 0.5
+        std = 20
         itr=0
-        # n_pts =1000
+        # n_pts =5000
         while itr<n_pts:
             p1_row = np.random.randint(0,self.size_row)
             p1_col = np.random.randint(0,self.size_col)
@@ -185,7 +175,7 @@ class PRM:
                     if bool(self.map_array[p_row][p_col]):
                         self.samples.append((p_row,p_col))
             itr+=1
-
+        # print(self.samples)
     def draw_map(self):
         '''Visualization of the result
         '''
@@ -242,14 +232,12 @@ class PRM:
             self.random_sample(n_pts)
         elif sampling_method == "gaussian":
             self.gaussian_sample(n_pts)
-            self.k_neighbors = 50
         elif sampling_method == "bridge":
             self.bridge_sample(n_pts)
+            self.k_neighbors =20
             
-            self.k_neighbors = 50
 
         ### YOUR CODE HERE ###
-        # self.k_neighbors = 5
         self.kd_tree = KDTree(self.samples)# Find the pairs of points that need to be connected
         pairs = []
         # #          (p_id1, p_id2, weight_12) ...]
@@ -266,16 +254,13 @@ class PRM:
         # For example, for self.samples = [(1, 2), (3, 4), (5, 6)],
         # p_id for (1, 2) is 0 and p_id for (3, 4) is 1.
         self.kdtree = KDTree(self.samples)
-        
-        query_pairs = self.kdtree.query_pairs(self.radius)
-        for pair in query_pairs:
-            id1,id2 = pair
-            if not self.check_collision(self.samples[id1],self.samples[id2]):
-                pairs.append((id1,id2,self.dis(self.samples[id1],self.samples[id2])))
-
-
+        distances,indices  = self.kdtree.query(self.samples,self.k_neighbors)
+        for index_list in indices:
+            sample_id = index_list[0]
+            for i in range(1,len(index_list)):
+                if not self.check_collision(self.samples[sample_id],self.samples[index_list[i]]):
+                    pairs.append((sample_id,index_list[i],distances[sample_id][i]))
         nodes_indices = [i for i in range(len(self.samples))]
-        # nodes_indices = [i for i in j for j in indices]
         self.graph.add_nodes_from(nodes_indices)
         self.graph.add_weighted_edges_from(pairs)
 
@@ -324,7 +309,6 @@ class PRM:
         # Add the edge to graph
         self.graph.add_weighted_edges_from(start_pairs)
         self.graph.add_weighted_edges_from(goal_pairs)
-
         # Seach using Dijkstra
         try:
             self.path = nx.algorithms.shortest_paths.weighted.dijkstra_path(self.graph,'start', 'goal')

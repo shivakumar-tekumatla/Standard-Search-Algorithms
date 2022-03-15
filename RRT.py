@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn import neighbors
 from bresenham import bresenham
-from sklearn.neighbors import KDTree
+from scipy.spatial import KDTree
 
 # Class for each tree node
 class Node:
@@ -114,9 +114,7 @@ class RRT:
         # Finding distance to all the vertices 
         for vertex in self.vertices:
             all_distances.append(self.dis(point,vertex))
-        # self.vertices[np.argmin(all_distances)]
         return self.vertices[np.argmin(all_distances)]
-
 
     def get_neighbors(self, new_node, neighbor_size):
         '''Get the neighbors that are within the neighbor distance from the node
@@ -156,10 +154,8 @@ class RRT:
         neighbors.remove(best_neighbor)
         #Trying to rewire all the neighbors again with the newly formed point 
         for neighbor in neighbors:
-            
             distance_newNode = new_node.cost + self.dis(new_node,neighbor)
-            not_collision = True#self.check_collision(neighbor, new_node)
-
+            not_collision = self.check_collision(neighbor, new_node)
             if neighbor.cost > distance_newNode and not_collision:
                 self.vertices.remove(neighbor)
                 neighbor.parent = new_node 
