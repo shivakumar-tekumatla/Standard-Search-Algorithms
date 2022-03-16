@@ -5,7 +5,6 @@ from dis import dis
 from tabnanny import verbose
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn import neighbors
 from bresenham import bresenham
 from scipy.spatial import KDTree
 

@@ -1,0 +1,6 @@
+bresenham
+numpy
+matplotlib
+scipy
+networkx
+tabnanny
