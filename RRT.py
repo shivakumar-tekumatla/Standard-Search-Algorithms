@@ -93,7 +93,6 @@ class RRT:
         '''
         ### YOUR CODE HERE ###
         self.goal_bias = goal_bias
-        
         if np.random.rand()>self.goal_bias:
             point = Node(np.random.randint(0,self.max_rows-1),np.random.randint(0,self.max_columns-1))
         else:
