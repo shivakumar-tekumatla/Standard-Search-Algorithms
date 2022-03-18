@@ -177,7 +177,7 @@ class RRT:
         # Draw Final Path if found
         if self.found:
             cur = self.goal
-            while cur.col != self.start.col and cur.row != self.start.row:
+            while cur.col != self.start.col or cur.row != self.start.row:
                 plt.plot([cur.col, cur.parent.col], [cur.row, cur.parent.row], color='b')
                 cur = cur.parent
                 plt.plot(cur.col, cur.row, markersize=3, marker='o', color='b')
